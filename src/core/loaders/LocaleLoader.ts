@@ -167,6 +167,34 @@ export class LocaleLoader extends Loader {
       }
     }
 
+    // 页面和模块类型的key值，直接创建对应的文件
+    if (keypath.startsWith('page.') || keypath.startsWith('module.')) {
+      const splitSymbol = Config.namespace ? Global.getNamespaceDelimiter() : '.'
+      const keyPaths = keypath.split(splitSymbol)
+      if (keyPaths.length > 2 && this._locale_dirs.length > 0) {
+        // 获取文件路径
+        const prefixDir = this._locale_dirs[0] ?? ''
+        const pathParts = keyPaths.slice(0, -2)
+        const dirPath = path.join(prefixDir, locale, pathParts.join(path.sep))
+        const fileName = `${keyPaths.slice(-2, -1)}.json`
+        const fullPath = path.join(dirPath, fileName)
+        // 创建文件
+        try {
+          if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true })
+          if (!fs.existsSync(fullPath)) fs.writeFileSync(fullPath, '{}', 'utf8')
+            // 更新文件信息
+            const { dirpath, relative } = this.getRelativePath(fullPath) || {}
+            if (dirpath && relative)
+              await this.loadFile(dirpath, relative)
+  
+            return fullPath
+        }
+        catch (error) {
+          throw new Error(`Failed to create file path: ${(error as Error).message}`)
+        }
+      }
+    }
+
     const paths = this.getFilepathsOfLocale(locale)
 
     if (paths.length === 1)

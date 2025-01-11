@@ -6,6 +6,7 @@ import { Config, Global } from '../extension'
 import { ExtractInfo } from './types'
 import { CurrentFile } from './CurrentFile'
 import { changeCase } from '~/utils/changeCase'
+import { genAutoKey } from '~/utils/keygen'
 
 export function generateKeyFromText(text: string, filepath?: string, reuseExisting = false, usedKeys: string[] = []): string {
   let key: string | undefined
@@ -21,7 +22,7 @@ export function generateKeyFromText(text: string, filepath?: string, reuseExisti
   // keygent
   const keygenStrategy = Config.keygenStrategy
   if (keygenStrategy === 'random') {
-    key = nanoid()
+    key = nanoid(Math.min(Config.extractKeyMaxLength, 21))
   }
   else if (keygenStrategy === 'empty') {
     key = ''
@@ -43,6 +44,9 @@ export function generateKeyFromText(text: string, filepath?: string, reuseExisti
     key = key
       .replace('{fileName}', basename(filepath))
       .replace('{fileNameWithoutExt}', basename(filepath, extname(filepath)))
+  }
+  else if (filepath && key.includes('{auto}')) {
+    key = key.replace('{auto}', genAutoKey(filepath))
   }
 
   key = changeCase(key, Config.keygenStyle).trim()
