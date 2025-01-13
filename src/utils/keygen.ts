@@ -22,8 +22,8 @@ export function genAutoKey(filePath: string): string {
 
   // 如果在views目录下，按照模块处理
   if (dirs.length > 3 && dirs[0] === 'views') {
-    const moduleDirs = dirs.slice(1, 3)
-    return `module.${moduleDirs.join('.')}`
+    const moduleName = dirs.slice(2, 3)
+    return `module.${moduleName}`
 }
 
 return `page.${dirs.join('.')}`
